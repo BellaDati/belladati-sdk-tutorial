@@ -9,10 +9,18 @@
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/charts.js"></script>
 </head>
 <body>
+	<!-- chart contents will be displayed in the div below -->
 	<div id="chart"></div>
 	<script>
+		// inject the chart JSON (server-side)
 		var json = ${chart};
+		
+		// create the chart object using the charts library
+		// first parameter "chart" is the ID of the element where charts are inserted
+		// second parameter is the chart data itself
 		var chart = Charts.create("chart", json.content);
+		
+		// set the chart size, triggering the chart render
 		chart.resize(800, 600);
 	</script>
 </body>
