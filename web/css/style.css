@@ -1,0 +1,71 @@
+body {
+	font-family: Helvetica, Arial, sans-serif;
+	color: #585858;
+	margin: 0;
+}
+
+a {
+	text-decoration: none;
+}
+
+button, input[type=submit], a.button {
+	color: #FFF;
+	background: #585858;
+	border-radius: 0.3em;
+	padding: 0.3em 1.5em;
+	border: none;
+	cursor: pointer;
+	font-size: 100%;
+}
+
+.login {
+	margin-top: 6em;
+	text-align: center;
+}
+
+.login img {
+	display: block;
+	margin: 3em auto;
+	background: #78C2DD;
+	padding: 1em 2em;
+	border-radius: 0.5em;
+}
+
+.login .login-hint {
+	margin-top: 5em;
+}
+
+.login .login-hint strong {
+	color: #78C2DD;
+}
+
+.error-message {
+	margin-top: 2em;
+	color: #ff2b22;
+}
+
+header {
+	display: block;
+	position: absolute;
+	top: 0;
+	width: 100%;
+	height: 64px;
+	background-color: #78C2DD;
+}
+
+header .logout {
+	position: absolute;
+	right: 2em;
+	bottom: 1.1em;
+}
+
+header img {
+	display: block;
+	position: absolute;
+	top: 6px;
+	left: 2em;
+}
+
+header + * {
+	margin-top: 5em;
+}
