@@ -4,7 +4,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -12,6 +14,7 @@ import com.belladati.sdk.BellaDatiService;
 import com.belladati.sdk.auth.OAuthRequest;
 import com.belladati.sdk.exception.auth.AuthorizationException;
 import com.belladati.sdk.view.ViewType;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Handles incoming page requests from the end user's browser. Connects to
@@ -22,8 +25,8 @@ import com.belladati.sdk.view.ViewType;
 @Controller
 public class TutorialController {
 
-	/** Hard-coded ID of the chart we want to load. */
-	private static final String CHART_ID = "30751-PqMvlM9gdC";
+	/** Hard-coded ID of the report we want to load. */
+	private static final String REPORT_ID = "30751";
 
 	/**
 	 * Provides access to a {@link BellaDatiService} instance, automatically
@@ -33,27 +36,39 @@ public class TutorialController {
 	private ServiceManager manager;
 
 	/**
-	 * Handles the root URL. Redirects to the login page or the view page
+	 * Handles the root URL. Redirects to the login page or the report page
 	 * depending on whether the user is logged in.
 	 */
 	@RequestMapping("/")
 	public ModelAndView initialUrl() {
 		if (manager.isLoggedIn()) {
-			return showView();
+			return showReport();
 		} else {
 			return new ModelAndView("login");
 		}
 	}
 
 	/**
-	 * Loads chart contents from BellaDati and injects them into the frontend
+	 * Loads report contents from BellaDati and injects them into the frontend
 	 * view for rendering.
 	 */
-	public ModelAndView showView() {
-		ModelAndView modelAndView = new ModelAndView("view");
-		modelAndView.addObject("chart", manager.getService().loadViewContent(CHART_ID, ViewType.CHART));
+	public ModelAndView showReport() {
+		ModelAndView modelAndView = new ModelAndView("report");
+		modelAndView.addObject("report", manager.getService().loadReport(REPORT_ID));
 
 		return modelAndView;
+	}
+
+	/**
+	 * Loads and returns the content of a chart from BellaDati.
+	 * 
+	 * @param chartId ID of the chart to load
+	 * @return the JSON content of the chart
+	 */
+	@RequestMapping("/chart/{id}")
+	@ResponseBody
+	public JsonNode viewContent(@PathVariable("id") String chartId) {
+		return (JsonNode) manager.getService().loadViewContent(chartId, ViewType.CHART);
 	}
 
 	/**
