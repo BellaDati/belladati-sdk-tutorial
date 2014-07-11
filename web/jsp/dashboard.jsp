@@ -5,7 +5,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>${report.name} - Step 4 - BellaDati SDK Tutorial</title>
+<title>${dashboard.name} - Step 4 - BellaDati SDK Tutorial</title>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css" />
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/raphael.js"></script>
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/charts.js"></script>
@@ -19,16 +19,16 @@
 		<a class="logout button" href="${pageContext.request.contextPath}/logout">Logout</a>
 	</header>
 	<section>
-		<%-- Since we injected the whole report, we can conveniently access its fields --%>
-		<h1>${report.name}</h1>
+		<%-- Since we injected the whole dashboard, we can conveniently access its fields --%>
+		<h1>${dashboard.name}</h1>
 		<div>
-			<%-- iterate over all views that are charts --%>
-			<c:forEach var="view" items="${report.views}">
-				<c:if test="${view.type == 'CHART'}">
+			<%-- iterate over all dashlets that are charts --%>
+			<c:forEach var="dashlet" items="${dashboard.dashlets}">
+				<c:if test="${dashlet.type == 'VIEW' && dashlet.content.type == 'CHART'}">
 					<%-- build a wrapper element in which to display the chart --%>
-					<div class="wrapper" data-view-id="${view.id}">
-						<span class="title">${view.name}</span>
-						<div class="content chart" id="chart-${view.id}"></div>
+					<div class="wrapper" data-view-id="${dashlet.content.id}">
+						<span class="title">${dashlet.content.name}</span>
+						<div class="content chart" id="chart-${dashlet.content.id}"></div>
 					</div>
 				</c:if>
 			</c:forEach>
