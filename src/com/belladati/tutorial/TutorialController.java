@@ -116,7 +116,7 @@ public class TutorialController {
 	 * Loads dashboard contents from BellaDati and injects them into the
 	 * frontend view for rendering.
 	 * 
-	 * @param reportId ID of the dashboard to load
+	 * @param dashboardId ID of the dashboard to load
 	 */
 	@RequestMapping("/dashboard/{id}")
 	public ModelAndView showDashboard(@PathVariable("id") String dashboardId) {
