@@ -114,7 +114,7 @@ public class TutorialController {
 	@RequestMapping("/report/{id}")
 	public ModelAndView showReport(@PathVariable("id") String reportId) {
 		if (!manager.isLoggedIn()) {
-			return new ModelAndView("redirect:/");
+			return new ModelAndView("redirect:/?redirectUrl=/report/" + reportId);
 		}
 		Report report = manager.getService().loadReport(reportId);
 
@@ -163,7 +163,7 @@ public class TutorialController {
 	@RequestMapping("/dashboard/{id}")
 	public ModelAndView showDashboard(@PathVariable("id") String dashboardId) {
 		if (!manager.isLoggedIn()) {
-			return new ModelAndView("redirect:/");
+			return new ModelAndView("redirect:/?redirectUrl=/dashboard/" + dashboardId);
 		}
 		ModelAndView modelAndView = new ModelAndView("dashboard");
 		modelAndView.addObject("dashboard", manager.getService().loadDashboard(dashboardId));
@@ -228,6 +228,9 @@ public class TutorialController {
 	 * Loads and returns the content of a chart from BellaDati.
 	 * 
 	 * @param chartId ID of the chart to load
+	 * @param intervalString an optional JSON string representing the interval
+	 *            to set, containing "from" and "to" elements with "year" and
+	 *            "month" each
 	 * @return the JSON content of the chart
 	 */
 	@RequestMapping("/chart/{id}")
@@ -241,10 +244,11 @@ public class TutorialController {
 					.asInt() - 1, 1);
 				Calendar to = new GregorianCalendar(interval.get("to").get("year").asInt(), interval.get("to").get("month")
 					.asInt() - 1, 1);
+				AbsoluteInterval<DateUnit> dateInterval = new AbsoluteInterval<DateUnit>(DateUnit.MONTH, from, to);
 
 				// if all is successful, use the interval to load the chart
-				return (JsonNode) manager.getService().createViewLoader(chartId, ViewType.CHART)
-					.setDateInterval(new AbsoluteInterval<DateUnit>(DateUnit.MONTH, from, to)).loadContent();
+				return (JsonNode) manager.getService().createViewLoader(chartId, ViewType.CHART).setDateInterval(dateInterval)
+					.loadContent();
 			} catch (IOException e) {} catch (InvalidIntervalException e) {}
 		}
 
@@ -256,8 +260,13 @@ public class TutorialController {
 	 * Redirects the user to BellaDati for OAuth authorization.
 	 */
 	@RequestMapping("/login")
-	public ModelAndView redirectToAuth(HttpServletRequest request) {
-		OAuthRequest oAuthRequest = manager.initiateOAuth(getDeploymentUrl(request) + "/authorize");
+	public ModelAndView redirectToAuth(@RequestParam(value = "redirectUrl", required = false) String redirectUrl,
+		HttpServletRequest request) {
+		String oauthRedirect = getDeploymentUrl(request) + "/authorize";
+		if (redirectUrl != null) {
+			oauthRedirect += "?redirectUrl=" + redirectUrl;
+		}
+		OAuthRequest oAuthRequest = manager.initiateOAuth(oauthRedirect);
 		return new ModelAndView("redirect:" + oAuthRequest.getAuthorizationUrl());
 	}
 
@@ -266,7 +275,8 @@ public class TutorialController {
 	 * BellaDati server. Completes OAuth.
 	 */
 	@RequestMapping("/authorize")
-	public ModelAndView requestAccessToken(RedirectAttributes redirectAttributes) {
+	public ModelAndView requestAccessToken(@RequestParam(value = "redirectUrl", required = false) String redirectUrl,
+		RedirectAttributes redirectAttributes) {
 		try {
 			manager.completeOAuth();
 		} catch (AuthorizationException e) {
@@ -276,7 +286,11 @@ public class TutorialController {
 			 */
 			redirectAttributes.addFlashAttribute("error", "Authentication failed: " + e.getMessage());
 		}
-		return new ModelAndView("redirect:/");
+		if (redirectUrl == null) {
+			return new ModelAndView("redirect:/");
+		} else {
+			return new ModelAndView("redirect:" + redirectUrl);
+		}
 	}
 
 	/**
