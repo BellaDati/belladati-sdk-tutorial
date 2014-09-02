@@ -110,3 +110,18 @@ section {
 	margin: 0.5em 1em;
 	border: none;
 }
+.date-select > * {
+	display: inline-block;
+}
+.date-select > div > span {
+	margin: 0 0.5em;
+}
+.date-select > div:first-child > span {
+	margin-left: 0;
+}
+.date-update {
+	margin-left: 2em;
+}
+.date-reset {
+	margin-left: 1em;
+}

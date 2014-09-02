@@ -5,7 +5,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>${report.name} - Step 4 - BellaDati SDK Tutorial</title>
+<title>${report.name} - Step 5 - BellaDati SDK Tutorial</title>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css" />
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/raphael.js"></script>
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/charts.js"></script>
@@ -21,12 +21,72 @@
 	<section>
 		<%-- Since we injected the whole report, we can conveniently access its fields --%>
 		<h1>${report.name}</h1>
+		<c:if test="${commonInterval != null}">
+			<div class="date-select">
+				<div class="date-from">
+					<span>Show data from</span>
+					<select name="month">
+						<option value="1">Jan</option>
+						<option value="2">Feb</option>
+						<option value="3">Mar</option>
+						<option value="4">Apr</option>
+						<option value="5">May</option>
+						<option value="6">Jun</option>
+						<option value="7">Jul</option>
+						<option value="8">Aug</option>
+						<option value="9">Sep</option>
+						<option value="10">Oct</option>
+						<option value="11">Nov</option>
+						<option value="12">Dec</option>
+					</select>
+					<select name="year">
+						<option>2010</option>
+						<option>2011</option>
+						<option>2012</option>
+						<option>2013</option>
+						<option>2014</option>
+						<option>2015</option>
+					</select>
+				</div>
+				<div class="date-to">
+					<span>to</span>
+					<select name="month">
+						<option value="1">Jan</option>
+						<option value="2">Feb</option>
+						<option value="3">Mar</option>
+						<option value="4">Apr</option>
+						<option value="5">May</option>
+						<option value="6">Jun</option>
+						<option value="7">Jul</option>
+						<option value="8">Aug</option>
+						<option value="9">Sep</option>
+						<option value="10">Oct</option>
+						<option value="11">Nov</option>
+						<option value="12">Dec</option>
+					</select>
+					<select name="year">
+						<option>2010</option>
+						<option>2011</option>
+						<option>2012</option>
+						<option>2013</option>
+						<option>2014</option>
+						<option>2015</option>
+					</select>
+				</div>
+				<button class="date-update">Update</button>
+				<button class="date-reset">Reset</button>
+			</div>
+			<script>
+				initInterval($(".date-select"), ${commonInterval}, '${pageContext.request.contextPath}');
+			</script>
+		</c:if>
 		<div>
 			<%-- iterate over all views that are charts --%>
 			<c:forEach var="view" items="${report.views}">
 				<c:if test="${view.type == 'CHART'}">
 					<%-- build a wrapper element in which to display the chart --%>
-					<div class="wrapper" data-view-id="${view.id}">
+					<div class="wrapper" data-view-id="${view.id}"
+							data-use-date-interval="${view.predefinedDateInterval == commonInterval}">
 						<span class="title">${view.name}</span>
 						<div class="content chart" id="chart-${view.id}"></div>
 					</div>
