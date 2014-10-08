@@ -4,8 +4,12 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -27,17 +31,24 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.belladati.sdk.BellaDatiService;
 import com.belladati.sdk.auth.OAuthRequest;
 import com.belladati.sdk.dashboard.DashboardInfo;
+import com.belladati.sdk.dataset.AttributeValue;
 import com.belladati.sdk.exception.auth.AuthorizationException;
 import com.belladati.sdk.exception.interval.InvalidIntervalException;
+import com.belladati.sdk.filter.Filter;
+import com.belladati.sdk.filter.Filter.MultiValueFilter;
+import com.belladati.sdk.filter.FilterOperation;
+import com.belladati.sdk.filter.FilterValue;
 import com.belladati.sdk.intervals.AbsoluteInterval;
 import com.belladati.sdk.intervals.DateUnit;
 import com.belladati.sdk.intervals.Interval;
 import com.belladati.sdk.report.Report;
 import com.belladati.sdk.report.ReportInfo;
 import com.belladati.sdk.view.View;
+import com.belladati.sdk.view.ViewLoader;
 import com.belladati.sdk.view.ViewType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * Handles incoming page requests from the end user's browser. Connects to
@@ -54,6 +65,16 @@ public class TutorialController {
 	 */
 	@Autowired
 	private ServiceManager manager;
+
+	/** Hardcoded ID of the data set */
+	private static final String DATA_SET_ID = "18812";
+
+	/** Hardcoded ID of the attribute used to filter */
+	private static final String ATTRIBUTE_CODE = "L_PRODUCT";
+
+	/** Stores the predefined filters for each view */
+	private final Map<String, Set<Filter<?>>> predefinedFilters = Collections
+		.synchronizedMap(new HashMap<String, Set<Filter<?>>>());
 
 	/**
 	 * Handles the root URL. Redirects to the login page or the report page
@@ -118,9 +139,18 @@ public class TutorialController {
 		}
 		Report report = manager.getService().loadReport(reportId);
 
+		List<AttributeValue> values = manager.getService().getAttributeValues(DATA_SET_ID, ATTRIBUTE_CODE).loadFirstTime()
+			.toList();
+
+		// store the views' predefined filters for later use
+		for (View view : report.getViews()) {
+			predefinedFilters.put(view.getId(), view.getPredefinedFilters());
+		}
+
 		ModelAndView modelAndView = new ModelAndView("report");
 		modelAndView.addObject("report", report);
 		modelAndView.addObject("commonInterval", getCommonMonthInterval(report));
+		modelAndView.addObject("attributeValues", values);
 
 		return modelAndView;
 	}
@@ -236,7 +266,11 @@ public class TutorialController {
 	@RequestMapping("/chart/{id}")
 	@ResponseBody
 	public JsonNode viewContent(@PathVariable("id") String chartId,
-		@RequestParam(value = "interval", required = false) String intervalString) throws IOException {
+		@RequestParam(value = "interval", required = false) String intervalString,
+		@RequestParam(value = "filterValues", required = false) String filterString) throws IOException {
+
+		ViewLoader loader = manager.getService().createViewLoader(chartId, ViewType.CHART);
+
 		if (intervalString != null) {
 			try {
 				JsonNode interval = new ObjectMapper().readTree(intervalString);
@@ -246,14 +280,34 @@ public class TutorialController {
 					.asInt() - 1, 1);
 				AbsoluteInterval<DateUnit> dateInterval = new AbsoluteInterval<DateUnit>(DateUnit.MONTH, from, to);
 
-				// if all is successful, use the interval to load the chart
-				return (JsonNode) manager.getService().createViewLoader(chartId, ViewType.CHART).setDateInterval(dateInterval)
-					.loadContent();
+				// if all is successful, use the interval when loading the chart
+				loader.setDateInterval(dateInterval);
 			} catch (IOException e) {} catch (InvalidIntervalException e) {}
 		}
 
-		// otherwise, load the chart without a specified interval
-		return (JsonNode) manager.getService().loadViewContent(chartId, ViewType.CHART);
+		if (filterString != null) {
+			try {
+				MultiValueFilter filter = FilterOperation.IN.createFilter(manager.getService(), DATA_SET_ID, ATTRIBUTE_CODE);
+				ArrayNode interval = (ArrayNode) new ObjectMapper().readTree(filterString);
+				for (JsonNode value : interval) {
+					filter.addValue(new FilterValue(value.asText()));
+				}
+
+				// if all is successful, use the filter when loading the chart
+				loader.addFilters(filter);
+			} catch (IOException e) {}
+		}
+
+		// always exclude items with a blank product name
+		loader.addFilters(FilterOperation.NOT_NULL.createFilter(manager.getService(), DATA_SET_ID, ATTRIBUTE_CODE));
+
+		// and always include the predefined filter, if we have one
+		if (predefinedFilters.containsKey(chartId)) {
+			loader.addFilters(predefinedFilters.get(chartId));
+		}
+
+		// load the chart
+		return (JsonNode) loader.loadContent();
 	}
 
 	/**

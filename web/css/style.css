@@ -110,6 +110,9 @@ section {
 	margin: 0.5em 1em;
 	border: none;
 }
+.date-select, .filter-select {
+	margin-top: 0.5em;
+}
 .date-select > * {
 	display: inline-block;
 }
@@ -119,9 +122,9 @@ section {
 .date-select > div:first-child > span {
 	margin-left: 0;
 }
-.date-update {
-	margin-left: 2em;
+.content-update {
+	margin-top: 1em;
 }
-.date-reset {
-	margin-left: 1em;
+.content-update button {
+	margin-right: 1em;
 }

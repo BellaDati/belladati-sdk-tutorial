@@ -5,7 +5,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>${dashboard.name} - Step 5 - BellaDati SDK Tutorial</title>
+<title>${dashboard.name} - Step 6 - BellaDati SDK Tutorial</title>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css" />
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/raphael.js"></script>
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/charts.js"></script>

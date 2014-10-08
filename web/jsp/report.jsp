@@ -5,7 +5,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>${report.name} - Step 5 - BellaDati SDK Tutorial</title>
+<title>${report.name} - Step 6 - BellaDati SDK Tutorial</title>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css" />
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/raphael.js"></script>
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/charts.js"></script>
@@ -21,7 +21,21 @@
 	<section>
 		<%-- Since we injected the whole report, we can conveniently access its fields --%>
 		<h1>${report.name}</h1>
+		<c:if test="${attributeValues != null}">
+			<div class="filter-select">
+				<c:forEach var="value" items="${attributeValues}">
+					<c:if test="${value.value != 'null'}">
+						<div class="filter-item">
+							<input type="checkbox" class="filter-value" id="${value.value}" name="${value.value}" />
+							<label for="${value.value}">${value.label}</label>
+						</div>
+					</c:if>
+				</c:forEach>
+			</div>
+		</c:if>
+		<script>var commonInterval = null;</script>
 		<c:if test="${commonInterval != null}">
+			<script>commonInterval = ${commonInterval};</script>
 			<div class="date-select">
 				<div class="date-from">
 					<span>Show data from</span>
@@ -73,13 +87,15 @@
 						<option>2015</option>
 					</select>
 				</div>
-				<button class="date-update">Update</button>
-				<button class="date-reset">Reset</button>
 			</div>
-			<script>
-				initInterval($(".date-select"), ${commonInterval}, '${pageContext.request.contextPath}');
-			</script>
 		</c:if>
+		<div class="content-update">
+			<button class="update">Update</button>
+			<button class="reset">Reset</button>
+		</div>
+		<script>
+			initInteractions($(".date-select"), commonInterval, $(".filter-select"), '${pageContext.request.contextPath}');
+		</script>
 		<div>
 			<%-- iterate over all views that are charts --%>
 			<c:forEach var="view" items="${report.views}">
