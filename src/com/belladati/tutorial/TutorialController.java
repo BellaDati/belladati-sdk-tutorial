@@ -271,6 +271,9 @@ public class TutorialController {
 
 		ViewLoader loader = manager.getService().createViewLoader(chartId, ViewType.CHART);
 
+		// always exclude items with a blank product name
+		loader.addFilters(FilterOperation.NOT_NULL.createFilter(manager.getService(), DATA_SET_ID, ATTRIBUTE_CODE));
+
 		if (intervalString != null) {
 			try {
 				JsonNode interval = new ObjectMapper().readTree(intervalString);
@@ -287,19 +290,19 @@ public class TutorialController {
 
 		if (filterString != null) {
 			try {
-				MultiValueFilter filter = FilterOperation.IN.createFilter(manager.getService(), DATA_SET_ID, ATTRIBUTE_CODE);
 				ArrayNode interval = (ArrayNode) new ObjectMapper().readTree(filterString);
-				for (JsonNode value : interval) {
-					filter.addValue(new FilterValue(value.asText()));
-				}
+				if (interval.size() > 0) {
+					MultiValueFilter filter = FilterOperation.IN.createFilter(manager.getService(), DATA_SET_ID, ATTRIBUTE_CODE);
+					for (JsonNode value : interval) {
+						filter.addValue(new FilterValue(value.asText()));
+					}
 
-				// if all is successful, use the filter when loading the chart
-				loader.addFilters(filter);
+					// if all is successful,
+					// use the filter when loading the chart
+					loader.addFilters(filter);
+				}
 			} catch (IOException e) {}
 		}
-
-		// always exclude items with a blank product name
-		loader.addFilters(FilterOperation.NOT_NULL.createFilter(manager.getService(), DATA_SET_ID, ATTRIBUTE_CODE));
 
 		// and always include the predefined filter, if we have one
 		if (predefinedFilters.containsKey(chartId)) {
