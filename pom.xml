@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.belladati</groupId>
   <artifactId>sdk-tutorial</artifactId>
-  <version>0.9.6</version>
+  <version>0.9.7</version>
   <packaging>war</packaging>
   <name>SDK Tutorial</name>
   <build>
@@ -35,7 +35,7 @@
   	<dependency>
   		<groupId>com.belladati</groupId>
   		<artifactId>sdk-java</artifactId>
-  		<version>0.9.6</version>
+  		<version>0.9.7</version>
   	</dependency>
   	<dependency>
   		<groupId>javax.servlet</groupId>
